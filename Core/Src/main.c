@@ -170,7 +170,7 @@ int main(void)
 
   cmd[0] = 4;
   cmd[1] = 0x55;
-  cmd[2] = 0x49; //0x49 to tx img, 0x37 to ping, 0x27 to reset.
+  cmd[2] = 0x00; //0x49 to tx img, 0x37 to ping, 0x27 to reset.
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -230,10 +230,27 @@ int main(void)
 				 }
 			 }
 
-			 if(uartRxBuf[1] == 0x49)
+			 if((uartRxBuf[1] == 0x49) || (uartRxBuf[1] == 0x37) || (uartRxBuf[1] == 0x27))
 			 {
-				 BUTTON_PRESSED_FLAG = 1;
-				 uartRxSize = 0;
+				 cmd[2] = uartRxBuf[1];
+
+				 if(TX_DONE == 1)
+				 {
+				    	TX_DONE = 0;
+
+				    	BUTTON_PRESSED_FLAG = 0;
+
+				    	sx1278_OpMode(STANDBY_MODE);
+				    	sx1278_WaitForModeReady(STANDBY_MODE);
+
+				    	sx1278_WriteFIFO(cmd, 5);
+
+				    	sx1278_OpMode(TX);
+						sx1278_WaitForModeReady(TX);
+
+						current_mode = TX;
+						uartRxSize = 0;
+				 }
 			 }
 
 		  }
